@@ -1,0 +1,58 @@
+{% load static %}
+<html>
+<head>
+  <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
+  <script src="{% static 'js/polyfill.min.js' %}"></script>
+  <script src="{% static 'js/bootstrap-vue.js%}"></script>
+  <script type="module">
+
+  </script>
+
+  <link type="text/css" rel="stylesheet" href="{% static 'css/bootstap.min.css' %}" />
+  <link type="text/css" rel="stylesheet" href="{% static 'css/boostrap-vue.css' %}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      padding: 10px;
+    }
+   </style>
+</head>
+
+{% if items %}
+<body>
+  <script src="{% static 'vue.js' %}"></script>
+  <script type='text/javascript'>
+    var people = {{ items_json|safe }};
+  </script>
+
+  <div id="app">
+    [[message]]
+
+    <ul>
+      <li v-for="person in people">
+        <a v-bind:href="person.url">[[ person.name ]]</a> <button v-on:click="greet(person.name)">hey</button>
+      </li>
+    </ul>
+  </div>
+
+  <script>
+    var app = new Vue({
+      delimiters: ['[[', ']]'],
+      el: '#app',
+      data: {
+          message: 'Hello Vue!',
+          people: people,
+      },
+      methods: {
+          greet: function(name) {
+              console.log('Hello from ' + name + '!')
+          }
+      }
+    });
+  </script>
+{% else %}
+  <p>No items available.</p>
+{% endif %}
+</body>
+</html>
