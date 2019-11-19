@@ -1,56 +1,54 @@
 <!DOCTYPE html>
 {% load staticfiles %}
 <html>
+
 <head>
-  <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
-  <script src="{% static 'js/bootstrap.js' %}"></script>
-  <script type="module" src="{% static 'js/api_client.js' %}"></script>
+  <!-- Load required Bootstrap and BootstrapVue CSS -->
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+
+  <!-- Load polyfills to support older browsers -->
+  <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
+    crossorigin="anonymous"></script>
+
+  <!-- Load Vue followed by BootstrapVue -->
+  <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
+  <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+
   <script type="module">
-   import App from "{% static 'js/app.js' %}";
+    import ApiClient from "{% static 'js/api_client.js' %}";
+    import App from "{% static 'js/app.js' %}";
   </script>
 
-  <link type="text/css" rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
-  <link type="text/css" rel="stylesheet" href="{% static 'css/bootstrap-vue.css' %}" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
     body {
       padding: 10px;
     }
-   </style>
+  </style>
 </head>
 
 <body>
 
-  <script type='text/javascript'>
-    var people = {{ items_json|safe }};
-  </script>
+  <div id="app" class="col-xs-3">
 
-  <div id="app">
-    [[message]]
+    <h1>Create new game session</h1>
 
-    <ul>
-      <li v-for="person in people">
-        <a v-bind:href="person.url">[[ person.name ]]</a> <button v-on:click="greet(person.name)">hey</button>
-      </li>
-    </ul>
+    <div>
+      <b-container fluid>
+        <div class="form-group">
+
+            <label for="sessionInputLabel">Session name</label>
+            <b-form-input id="session-name-input" v-model="appState.state.slug" type="text"
+              placeholder="Enter session name"></b-form-input>
+            <b-button class="btn-block" v-on:click=createSession>Create</button>
+
+      </b-container>
+    </div>
+
+
   </div>
-
-  <script>
-      var app = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#app',
-        data: {
-            message: 'Hello Vue!',
-            people: people,
-        },
-        methods: {
-            greet: function(name) {
-                console.log('Hello from ' + name + '!')
-            }
-        }
-      });
-    </script>
-
 </body>
+
 </html>

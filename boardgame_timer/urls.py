@@ -6,5 +6,7 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='home')
+    path('', views.index, name='home'),
+    path('api/sessions', views.createSession, name='createSession'),
+    path('sessions/<slug:session>', views.getSession, name='getSession')
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

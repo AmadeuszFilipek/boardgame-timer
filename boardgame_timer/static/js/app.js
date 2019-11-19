@@ -1,4 +1,5 @@
-import ApiClient from 'api_client.js';
+
+import ApiClient from './api_client.js';
 
 function init() {
   console.log('init');
@@ -7,76 +8,26 @@ function init() {
     delimiters: ['[[', ']]'],
     el: '#app',
     data: {
-      message: 'Hello Vue!',
-      people: people,
       appState: {
         version: 0,
         state: {
           id: 'new_session_form',
+          slug: '',
         }
       },
     },
-
-    async mounted() {
-      if (localStorage.playerName) {
-        this.playerName = localStorage.playerName;
-      }
-
-      let pathParts = window.location.pathname.split('/');
-      if (pathParts.length === 3 && pathParts[1] === 'sessions') {
-        this.appState.slug = pathParts[2];
-        await this.loadState();
-        this.startPolling();
-      }
-    },
-
-    computed: {
+    methods:{
       api() {
-         return new ApiClient({ pathPrefix: 'http://127.0.0.1:8000/' });
-       },
-    },
-
-    methods: {
-      greet: function(name) {
-         console.log('Hello from ' + name + '!')
+        return new ApiClient();
       },
-      setState(newState) {
-        if (newState.version > this.appState.version) {
-            this.appState = newState;
-        }
+      async greet() {
+        window.alert("hellow");
       },
-
-      startPolling() {
-        setInterval(this.loadState.bind(this), 5000);
-      },
-      },
-
-      async loadState() {
-        try {
-          let json = await this.api.getTown({
-            townSlug: this.appState.slug
-          });
-
-          this.setState(json);
-        } catch (e) {
-          console.error('error =', e);
-          window.history.pushState({}, null, '/');
-        }
-      },
-
-      async createTown() {
-        let json = await this.api.createTown({
-          townSlug: this.appState.slug,
-          playerName: this.playerName
-        });
-        console.log("json = ", json);
-
-        this.setState(json);
-        window.history.pushState({}, null, `/towns/${this.appState.slug}`);
-        this.startPolling();
-      },
-
-    watch: {
+      async createSession() {
+        console.log("In createSession");
+        let result = await this.api().createSession(this.appState.state.slug);
+        console.log(result);
+      }
     }
   });
 }
