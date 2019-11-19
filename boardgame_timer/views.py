@@ -1,14 +1,22 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import random
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotFound
+from boardgame_timer.session import Session, CountDownTimer
 
 sessions = {}
-class Session: pass
 
 def index(request):
 
    return render(request, 'index.html')
+
+def getSessionAndIndex(request, session):
+   if session in sessions:
+      context = {}
+      context['session'] = sessions[session].to_dict()
+      return render(request, 'index.html', context)
+   else:
+      return redirect(index)
 
 def createSession(request):
    if request.method == "POST":
@@ -16,7 +24,7 @@ def createSession(request):
       inc_data = json.loads(request.body)
       new_session_name = inc_data["session"]["slug"]
       if new_session_name in sessions:
-         return JsonResponse({'status': 'error'})
+         return getSessionAndIndex(request, new_session_name)
       else:
          sessions[new_session_name] = Session(new_session_name)
          return JsonResponse({'status': 'created'})
@@ -24,30 +32,60 @@ def createSession(request):
    else:
       return JsonResponse({'status': 'error'})
 
+def addPlayer(request, session, player):
+   if request.method == "POST":
+      if session in sessions:
+         if player in sessions[session].players:
+            return JsonResponse({'status': 'error'})
+         else:      
+            timer = CountDownTimer(10 * 60)
+            sessions[session].addPlayer(player, timer)
+            print('Adding player')
+            print(sessions[session].to_dict())
+            return JsonResponse(sessions[session].to_dict())
+
+   return HttpResponseNotFound()
+
 def getSession(request, session):
 
    if session in sessions:
       return JsonResponse(sessions[session].to_dict())
    else:
-      return JsonResponse({'status': 'error'})
+      return HttpResponseNotFound()
 
-def shufflePlayers(request):
-   pass
+def shufflePlayers(request, session):
+   if session in sessions:
+      sessions[session].players.shuffle()
+      return JsonResponse(sessions[session].to_dict())
+   else:
+      return HttpResponseNotFound()
 
 def nextPlayer(request):
-   pass
+   if session in sessions:
+      sessions[session].players.next()
+      return JsonResponse(sessions[session].to_dict())
+   else:
+      return HttpResponseNotFound()
 
 def previousPlayer(request):
-   pass
+   if session in sessions:
+      sessions[session].players.previous()
+      return JsonResponse(sessions[session].to_dict())
+   else:
+      return HttpResponseNotFound()
 
-def togglePlayer(request):
-   pass
+def togglePlayer(request, session, player):
+   if session in sessions and player in sessions[session].players:
+      sessions[session].players[player].toggle() 
+      return JsonResponse(sessions[session].to_dict())
+   else:
+      return HttpResponseNotFound()
 
-def switchPlayers(request):
-   pass
+def replacePlayer(request, session, player, place):
+   if session in sessions and player in sessions[session].players:
+      sessions[session].players[player].move(place)
+      return JsonResponse(sessions[session].to_dict())
+   else:
+      return HttpResponseNotFound()
 
-def addPlayer(request):
-   # add a player to the ongoing session
-   # if request.method == "POST":
-   pass
 
