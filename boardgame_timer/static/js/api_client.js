@@ -2,18 +2,21 @@ class ApiClient {
 
   path_prefix = "https://127.0.0.1:8000"
 
-   async getSession({ sessionSlug }) {
-      let res = await fetch(`/api/sessions/${sessionSlug}`);
+   async getSession(sessionSlug) {
+      let res = await fetch('/api/sessions/' + sessionSlug);
       return await res.json();
     } 
 
    async createSession(sessionSlug) {
-    console.log(sessionSlug)
      return await this.post('/api/sessions', {
        session: { slug: sessionSlug }
      });
    }
- 
+   
+   async addPlayer(sessionSlug, playerName) {
+    return await this.post('/api/sessions/' + sessionSlug + '/' + playerName);
+   }
+
    // helper method performing POST requests with jsonified data
    // returns parsed json response
    async post(url, data = null) {

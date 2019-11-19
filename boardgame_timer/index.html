@@ -31,23 +31,52 @@
 
 <body>
 
-  <div id="app" class="col-xs-3">
 
-    <h1>Create new game session</h1>
 
-    <div>
+<div id="app" class="col-xs-3">
+  
+  {% if session %}
+    [[ setState({{ session|safe }}) ]]
+  {% endif %}
+
+    <div v-if="appState.version === 0">
+      
+      <h1>Create new game session</h1>
       <b-container fluid>
         <div class="form-group">
 
             <label for="sessionInputLabel">Session name</label>
-            <b-form-input id="session-name-input" v-model="appState.state.slug" type="text"
+            <b-form-input id="session-name-input" v-model="appState.slug" type="text"
               placeholder="Enter session name"></b-form-input>
-            <b-button class="btn-block" v-on:click=createSession>Create</button>
-
+            <b-button class="btn-block" v-on:click=createSession>Create</b-button>
+        
+        </div>
       </b-container>
     </div>
 
 
+    <div v-if="appState.version !== 0">
+      <b-progress-group vertical>
+        <b-progress :value="value" :max="max">hellow</b-progress>
+        <b-button v-for="player in appState.players">
+          [[ player.name ]]
+        </b-button>
+      </b-button-group>
+    </div>
+
+
+    <div v-if="appState.version !== 0">
+      <b-form-group>
+
+          <label for="playerInputLabel">Add player</label>
+          <b-form-input id="player-name-input" type="text" v-model=playerName type="text"
+          placeholder="Add player"></b-form-input>
+          <b-button class="btn-block" v-on:click=addPlayer(playerName) :disabled=!playerName>Add</b-button>
+      
+      </b-form-group>
+    </div>
+
+    [[ appState ]]
   </div>
 </body>
 
