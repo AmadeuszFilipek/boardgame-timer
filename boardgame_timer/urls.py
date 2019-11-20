@@ -12,11 +12,14 @@ urlpatterns = [
     path('api/sessions', views.createSession, name='createSession'),
     path('api/sessions/<slug:session>', views.getSession, name='getSession'),
     
-    path('api/sessions/<slug:session>/start', views.start, name='getSession'),
-    path('api/sessions/<slug:session>/stop', views.stop, name='getSession'),
+    path('api/sessions/<slug:session>/start', views.start),
+    path('api/sessions/<slug:session>/stop', views.stop),
+    path('api/sessions/<slug:session>/next', views.nextPlayer),
+    path('api/sessions/<slug:session>/previous', views.previousPlayer),
     
-    path('api/sessions/<slug:session>/<slug:player>', views.addPlayer, name='createPlayer'),
-    path('api/sessions/<slug:session>/<slug:player>/toggle', views.togglePlayer, name='createPlayer'),
+    
+    path('api/sessions/<slug:session>/<slug:player>', views.addPlayer),
+    path('api/sessions/<slug:session>/<slug:player>/toggle', views.togglePlayer),
     
     
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

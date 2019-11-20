@@ -17,12 +17,12 @@ class ApiClient {
     return await this.post('/api/sessions/' + sessionSlug + '/' + playerName);
    }
 
-   async previousPlayer(sessionSlug, playerName) {
-    return await this.post('/api/sessions/' + sessionSlug + '/' + playerName + '/previous');
+   async previousPlayer(sessionSlug) {
+    return await this.post('/api/sessions/' + sessionSlug + '/previous');
    }
 
-   async nextPlayer(sessionSlug, playerName) {
-    return await this.post('/api/sessions/' + sessionSlug + '/' + playerName + '/next');
+   async nextPlayer(sessionSlug) {
+    return await this.post('/api/sessions/' + sessionSlug + '/next');
    }
 
    async togglePlayer(sessionSlug, playerName) {

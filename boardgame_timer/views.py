@@ -40,8 +40,7 @@ def addPlayer(request, session, player):
          else:      
             timer = CountDownTimer(10 * 60)
             sessions[session].addPlayer(player, timer)
-            print('Adding player')
-            print(sessions[session].to_dict())
+
             return JsonResponse({'status': 'ok'})
 
    return HttpResponseNotFound()
@@ -50,7 +49,7 @@ def togglePlayer(request, session, player):
    if request.method == "POST":
       if session in sessions:
          if player in sessions[session].players:
-            print('toggling')
+
             sessions[session].toggle(player)
             return JsonResponse({'status': 'ok'})
          else:      
@@ -72,23 +71,16 @@ def shufflePlayers(request, session):
    else:
       return HttpResponseNotFound()
 
-def nextPlayer(request):
+def nextPlayer(request, session):
    if session in sessions:
-      sessions[session].players.next()
+      sessions[session].nextPlayer()
       return JsonResponse(sessions[session].to_dict())
    else:
       return HttpResponseNotFound()
 
-def previousPlayer(request):
+def previousPlayer(request, session):
    if session in sessions:
-      sessions[session].players.previous()
-      return JsonResponse(sessions[session].to_dict())
-   else:
-      return HttpResponseNotFound()
-
-def replacePlayer(request, session, player, place):
-   if session in sessions and player in sessions[session].players:
-      sessions[session].players[player].move(place)
+      sessions[session].previousPlayer()
       return JsonResponse(sessions[session].to_dict())
    else:
       return HttpResponseNotFound()
@@ -108,6 +100,10 @@ def stop(request, session):
          return JsonResponse({'status': 'ok'})
    
    return JsonResponse({'status': 'error'})
+
+def replacePlayer(request, session, player, place):
+   # not implemented
+   pass
 
 
 

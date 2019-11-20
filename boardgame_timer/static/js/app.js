@@ -95,6 +95,13 @@ function init() {
           await this.getSession();
         }
       },
+      async stop() {
+          let newState = await this.api().stop(this.appState.slug);
+  
+          if (newState["status"] !== "error") {
+            await this.getSession();
+          }
+      },
       refresh() {
         this.getSession();
         setTimeout(this.refresh, 1000);

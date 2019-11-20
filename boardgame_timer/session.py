@@ -34,12 +34,8 @@ class Session:
    
       return output
 
-   def checkActive(self):
-      pass
-
    def toggle(self, player):
-      if player is self.active_player:
-         
+      if player == self.active_player:
          self.players[self.active_player].toggle()
          self.any_timer_active = not self.any_timer_active
       else:
@@ -52,10 +48,10 @@ class Session:
       if not self.any_timer_active:
          return
 
-      old_id = self.players[self.active_player]
+      old_id = self.players[self.active_player].id
       players_by_id = {p.id: p for p in self.players.values()}
       
-      if old_id >= len(self.players):
+      if old_id >= len(self.players) - 1:
          new_id = 0
       else:
          new_id = old_id + 1
@@ -68,7 +64,7 @@ class Session:
       if not self.any_timer_active:
          return
 
-      old_id = self.players[self.active_player]
+      old_id = self.players[self.active_player].id
       players_by_id = {p.id: p for p in self.players.values()}
       
       if old_id <= 0:
