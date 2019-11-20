@@ -1,5 +1,6 @@
 from itertools import count, cycle
 import time
+import random
 
 class Session:
 
@@ -33,6 +34,15 @@ class Session:
       }
    
       return output
+
+   def shuffle(self):
+      player_ids = [p.id for p in self.players.values()]
+      
+      for i in range(5):
+         random.shuffle(player_ids)
+      
+      for i, player in zip(player_ids, self.players.values()):
+         player.id = i 
 
    def toggle(self, player):
       if player == self.active_player:

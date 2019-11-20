@@ -18,10 +18,7 @@ function init() {
 
     // this is for other players, not creator of session
     async mounted() {
-      console.log("In mounted method")
-      console.log(this.appState);
       if (this.appState.version > 0) {
-        console.log(this.appState);
         this.startPolling();
       }
     },
@@ -43,6 +40,7 @@ function init() {
         return new ApiClient();
       },
       setState(newState) {
+        console.log("setting state")
         if (newState.version > this.appState.version) {
           this.appState = newState;
         }
@@ -101,6 +99,13 @@ function init() {
           if (newState["status"] !== "error") {
             await this.getSession();
           }
+      },
+      async shuffle() {
+        let newState = await this.api().shuffle(this.appState.slug);
+
+        if (newState["status"] !== "error") {
+          await this.getSession();
+        }
       },
       refresh() {
         this.getSession();

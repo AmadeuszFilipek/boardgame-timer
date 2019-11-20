@@ -37,6 +37,10 @@ class ApiClient {
     return await this.post('/api/sessions/' + sessionSlug + '/stop');
    }
 
+   async stop(sessionSlug) {
+    return await this.post('/api/sessions/' + sessionSlug + '/shuffle');
+   }
+
    // helper method performing POST requests with jsonified data
    // returns parsed json response
    async post(url, data = null) {

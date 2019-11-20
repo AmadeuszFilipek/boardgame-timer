@@ -10,10 +10,17 @@ def index(request):
 
    return render(request, 'index.html')
 
+def getSession(request, session):
+
+   if session in sessions:
+      return JsonResponse(sessions[session].to_dict())
+   else:
+      return HttpResponseNotFound()
+
 def getSessionAndIndex(request, session):
    if session in sessions:
       context = {}
-      context['session'] = sessions[session].to_dict()
+      context['session'] = json.dumps(sessions[session].to_dict())
       return render(request, 'index.html', context)
    else:
       return redirect(index)
@@ -57,17 +64,10 @@ def togglePlayer(request, session, player):
 
    return HttpResponseNotFound()
 
-def getSession(request, session):
-
-   if session in sessions:
-      return JsonResponse(sessions[session].to_dict())
-   else:
-      return HttpResponseNotFound()
-
 def shufflePlayers(request, session):
    if session in sessions:
-      sessions[session].players.shuffle()
-      return JsonResponse(sessions[session].to_dict())
+      sessions[session].shuffle()
+      return JsonResponse({'status': 'ok'})
    else:
       return HttpResponseNotFound()
 
