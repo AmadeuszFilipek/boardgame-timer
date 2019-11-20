@@ -17,10 +17,29 @@ class ApiClient {
     return await this.post('/api/sessions/' + sessionSlug + '/' + playerName);
    }
 
+   async previousPlayer(sessionSlug, playerName) {
+    return await this.post('/api/sessions/' + sessionSlug + '/' + playerName + '/previous');
+   }
+
+   async nextPlayer(sessionSlug, playerName) {
+    return await this.post('/api/sessions/' + sessionSlug + '/' + playerName + '/next');
+   }
+
+   async togglePlayer(sessionSlug, playerName) {
+    return await this.post('/api/sessions/' + sessionSlug + '/' + playerName + '/toggle');
+   }
+
+   async start(sessionSlug) {
+    return await this.post('/api/sessions/' + sessionSlug + '/start');
+   }
+
+   async stop(sessionSlug) {
+    return await this.post('/api/sessions/' + sessionSlug + '/stop');
+   }
+
    // helper method performing POST requests with jsonified data
    // returns parsed json response
    async post(url, data = null) {
-     console.log(url)
      let res = await fetch(url, {
        method: 'POST',
        body: JSON.stringify(data),
