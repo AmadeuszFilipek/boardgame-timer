@@ -57,9 +57,9 @@
 
     <div v-if="appState.version !== 0">
       <b-progress-group vertical>
-        <b-progress :value="value" :max="max">hellow</b-progress>
-        <b-button v-for="player in appState.players">
-          [[ player.name ]]
+        <b-button class="btn-block" v-for="player in appState.players">
+          [[ playerBaner(player.name) ]]
+          <b-progress :value="50" :max="1000"></b-progress>
         </b-button>
       </b-button-group>
     </div>

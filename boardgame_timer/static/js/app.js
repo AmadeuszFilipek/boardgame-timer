@@ -26,17 +26,23 @@ function init() {
     },
 
     computed: {
-      playerBaner: function(name) {
-        // return full player name and time
-        name + this.appState.players[name][time] / 60.
-
-      },
-      sortedPlayers: function() {
-        // sort players by their ID
-      }
+      sortedPlayers: function() {    
+          return null;
+        }
     },
 
     methods:{
+      playerBaner(name) {
+        // return full player name and time
+        
+        var date = new Date(null);
+        date.setSeconds( this.appState.players[name]['time']);
+        var result = date.toISOString().substr(11, 8);
+
+        return `${name} ${result}`;
+
+      },
+
       api() {
         return new ApiClient();
       },
