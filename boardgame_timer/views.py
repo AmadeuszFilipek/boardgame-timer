@@ -101,11 +101,15 @@ def stop(request, session):
    
    return JsonResponse({'status': 'error'})
 
+def restart(request, session):
+   if request.method == "POST":
+      if session in sessions:
+         sessions[session].restart()
+         return JsonResponse({'status': 'ok'})
+   
+   return JsonResponse({'status': 'error'})
+
+
 def replacePlayer(request, session, player, place):
    # not implemented
    pass
-
-
-
-
-

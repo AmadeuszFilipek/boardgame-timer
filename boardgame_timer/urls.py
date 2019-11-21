@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/sessions/<slug:session>/next', views.nextPlayer),
     path('api/sessions/<slug:session>/previous', views.previousPlayer),
     path('api/sessions/<slug:session>/shuffle', views.shufflePlayers),
+    path('api/sessions/<slug:session>/restart', views.restart),
     
     
     path('api/sessions/<slug:session>/<slug:player>', views.addPlayer),

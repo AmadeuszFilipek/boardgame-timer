@@ -124,8 +124,12 @@ function init() {
           await this.getSession();
         }
       },
-      async restart(){
-        console.log('Restart not implemented');
+      async restart() {
+        let newState = await this.api().restart(this.appState.slug);
+
+        if (newState["status"] !== "error") {
+          await this.getSession();
+        }
       },
       refresh() {
         this.getSession();

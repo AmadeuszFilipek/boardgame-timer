@@ -35,6 +35,11 @@ class Session:
    
       return output
 
+   def restart(self):
+      # to fix this, implement proper handling of timer
+      for name in self.players:
+         self.players[name] = Player(name, 60 * 10)
+
    def shuffle(self):
       player_ids = [p.id for p in self.players.values()]
       
