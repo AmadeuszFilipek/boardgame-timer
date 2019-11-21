@@ -37,7 +37,7 @@ class ApiClient {
     return await this.post('/api/sessions/' + sessionSlug + '/stop');
    }
 
-   async stop(sessionSlug) {
+   async shuffle(sessionSlug) {
     return await this.post('/api/sessions/' + sessionSlug + '/shuffle');
    }
 

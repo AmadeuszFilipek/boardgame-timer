@@ -29,6 +29,17 @@
     .nav-btn {
         background-color: rgba(255, 255, 255, 0.5);
         margin-bottom: 10px;
+        margin-top: 10px;
+    }
+    .player-btn {
+      text-align: center;
+      vertical-align: middle;
+      fill: none;
+    }
+    .player-text {
+      color: black;
+      font-size: 5vw;
+      font-family: monospace;
     }
 
   </style>
@@ -71,15 +82,25 @@
       </b-container>
 
       <b-progress-group vertical>
-        <b-button class="btn-block" v-for="player in appState.players" v-on:click=togglePlayer(player.name)>
-          [[ playerBaner(player) ]]
-          <b-progress :value="player.ratio" :max="1"></b-progress>
+        <b-button class="btn-block player-btn" v-for="player in appState.players" v-on:click=togglePlayer(player.name)
+          v-bind:variant="getPlayerVariant(player)">
+          <p class="player-text">[[ playerBaner(player) ]]</p>
+          <b-progress v-bind:variant="isColoredBar(player)" :value="player.ratio" :max="1" v-bind:animated="isActiveBar(player)"></b-progress>
         </b-button>
         </b-button-group>
     </div>
 
 
     <div v-if="appState.version !== 0">
+
+      <b-container fluid>
+        <b-button-group class="btn-block">
+          <b-button class="nav-btn" v-on:click=shuffle()> <img src="{% static 'icons/shuffle.png' %}"/> </b-button>
+          <b-button class="nav-btn" v-on:click=start()> <img src="{% static 'icons/restart.png' %}"/> </b-button>
+        </b-button-group>
+      </b-container>
+        
+        
         <b-input-group class="mt-3" size="lg">
 
         <b-form-input id="player-name-input" type="text" v-model=playerName type="text" placeholder="Add player">

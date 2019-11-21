@@ -24,9 +24,27 @@ function init() {
     },
 
     computed: {
+
     },
 
     methods:{
+      isColoredBar(player) {
+        if ((player.name === this.appState.activePlayer) && this.appState.active) {
+          return "danger";
+        } else {
+          return "dark";
+        }
+      },
+      isActiveBar(player) {
+        return (player.name === this.appState.activePlayer) && this.appState.active;
+      },
+      getPlayerVariant(player) {
+        if (player.name === this.appState.activePlayer) {
+          return (this.appState.active) ? "outline-danger" : "outline-success";
+        } else {
+          return "outline-secondary";
+        }
+      },
       playerBaner(player) {
         // return full player name and time
         var date = new Date(null);
@@ -40,7 +58,6 @@ function init() {
         return new ApiClient();
       },
       setState(newState) {
-        console.log("setting state")
         if (newState.version > this.appState.version) {
           this.appState = newState;
         }
@@ -106,6 +123,9 @@ function init() {
         if (newState["status"] !== "error") {
           await this.getSession();
         }
+      },
+      async restart(){
+        console.log('Restart not implemented');
       },
       refresh() {
         this.getSession();
