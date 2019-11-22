@@ -7,10 +7,8 @@ class ApiClient {
       return await res.json();
     } 
 
-   async createSession(sessionSlug) {
-     return await this.post('/api/sessions', {
-       session: { slug: sessionSlug }
-     });
+   async createSession(sessionData) {
+     return await this.post('/api/sessions', sessionData);
    }
    
    async addPlayer(sessionSlug, playerName) {

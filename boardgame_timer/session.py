@@ -5,28 +5,46 @@ import random
 class Session:
 
    iterator = count()
+   player_count = count()
 
-   def __init__(self, slug):
+   def __init__(self, slug, timer, seconds, auto_pass):
       self.slug = slug
       self.id = self.iterator.__next__()
       self.version = time.time()
+      self.timer = timer
+      self.seconds = seconds
+      self.auto_pass = auto_pass
+
       self.players = {}
       self.active_player = None
       self.any_timer_active = False
 
-   def addPlayer(self, name, timer):
-      self.players[name] = Player(name, timer)
+   def addPlayer(self, name):
+      timer = self.timer(self.seconds)
+      self.players[name] = Player(name, timer, self.player_count.__next__()) 
       if self.active_player is None:
          self.active_player = name
 
+   def is_state_to_be_changed(self):
+      if not self.auto_pass:
+         return False
+
+      if self.any_timer_active and self.players[self.active_player].measure() == 0:
+         return True
+   
    def to_dict(self):
       timestamp = time.time()
+      
+      if self.is_state_to_be_changed():
+         self.nextPlayer()
+
       players = [p.to_dict() for p in self.players.values()]
       players.sort(key=lambda p: p['id'])
 
       output = {
          'slug': self.slug,
          'id': self.id,
+         'type': self.timer().__str__(),
          'version': timestamp,
          'players': players,
          'active': self.any_timer_active,
@@ -38,7 +56,9 @@ class Session:
    def restart(self):
       # to fix this, implement proper handling of timer
       for name in self.players:
-         self.players[name] = Player(name, 60 * 10)
+         timer = self.timer(self.seconds)
+         self.players[name] = Player(name, timer, self.players[name].id)
+      self.any_timer_active = False
 
    def shuffle(self):
       player_ids = [p.id for p in self.players.values()]
@@ -94,7 +114,9 @@ class Session:
    def start(self):
       if self.any_timer_active:
          return
-
+      if self.active_player is None:
+         return
+         
       self.players[self.active_player].start()
       self.any_timer_active = True
    
@@ -108,13 +130,14 @@ class Session:
 
 class Player:
 
-   iterator = count()
-
-   def __init__(self, name, timer):
+   def __init__(self, name, timer, id):
       self.name = name
       self.timer = timer
-      self.id = self.iterator.__next__()
+      self.id = id
    
+   def measure(self):
+      return self.timer.time()
+
    def to_dict(self):
       output = {
          'name': self.name,
@@ -135,31 +158,3 @@ class Player:
 
    def start(self):
       self.timer.start()
-
-class CountDownTimer:
-
-   def __init__(self, total_time):
-      self.total_time = total_time
-      self.remaining_time = total_time # in seconds
-      self.is_running = False
-
-   def start(self):
-      self.is_running = True
-      self.start_time = time.time()
-   
-   def stop(self):
-      self.is_running = False
-   
-   def time(self):
-      if self.is_running:
-         elapsed_time = time.time() - self.start_time
-         self.start_time = time.time()
-         self.remaining_time -= elapsed_time
-         if self.remaining_time < 0:
-            self.remaining_time = 0
-            self.is_running = False
-            
-      return self.remaining_time
-   
-   def ratio(self):
-      return self.time() / self.total_time

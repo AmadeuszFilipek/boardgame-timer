@@ -2,8 +2,12 @@ from django.shortcuts import render, redirect
 import random
 import json
 from django.http import JsonResponse, HttpResponseNotFound
-from boardgame_timer.session import Session, CountDownTimer
+from boardgame_timer.session import Session
+from boardgame_timer.timer import CountDownTimer, CountUpTimer, TimePerMoveTimer
 
+supported_timers = {'CountDownTimer': CountDownTimer,
+                    'CountUpTimer': CountUpTimer,
+                    'TimePerMoveTimer': TimePerMoveTimer}
 sessions = {}
 
 def index(request):
@@ -29,12 +33,19 @@ def createSession(request):
    if request.method == "POST":
 
       inc_data = json.loads(request.body)
-      new_session_name = inc_data["session"]["slug"]
+      new_session_name = inc_data["slug"]
       if new_session_name in sessions:
-         return getSessionAndIndex(request, new_session_name)
+         return JsonResponse({'status': 'error'})
       else:
-         sessions[new_session_name] = Session(new_session_name)
-         return JsonResponse({'status': 'ok'})
+         timer_name = inc_data["timer"]
+         auto_pass = inc_data["autoPass"]
+         seconds = inc_data["seconds"]
+
+         if timer_name in supported_timers:
+            timer_class = supported_timers[timer_name] 
+            sessions[new_session_name] = Session(
+               new_session_name, timer_class, seconds, auto_pass)
+            return JsonResponse({'status': 'ok'})
 
    else:
       return JsonResponse({'status': 'error'})
@@ -45,8 +56,7 @@ def addPlayer(request, session, player):
          if player in sessions[session].players:
             return JsonResponse({'status': 'error'})
          else:      
-            timer = CountDownTimer(10 * 60)
-            sessions[session].addPlayer(player, timer)
+            sessions[session].addPlayer(player)
 
             return JsonResponse({'status': 'ok'})
 

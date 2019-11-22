@@ -8,6 +8,13 @@ function init() {
     delimiters: ['[[', ']]'],
     el: '#app',
     data: {
+      timers: {0:"CountDownTimer", 1: "CountUpTimer", 2: "TimePerMoveTimer"},
+      options: [{ text: 'Auto', value: 'radio1' },
+                { text: 'Radio 3', value: 'radio2' }],
+      autoPass: false,
+      selectedTimer: 0,
+      minutes: 1,
+      seconds: 0,
       poll: false,
       playerName: null,
       appState: {
@@ -24,10 +31,55 @@ function init() {
     },
 
     computed: {
-
+      getCreateSessionData: function() {
+        if (this.timers[this.selectedTimer] === this.timers[0]) {
+          var data = {
+            "slug": this.appState.slug,
+            "autoPass": false,
+            "timer": this.timers[this.selectedTimer],
+            "seconds": this.minutes * 60};
+            return data;
+        }  
+        if (this.timers[this.selectedTimer] === this.timers[1]) {
+          var data = {
+            "slug": this.appState.slug,
+            "autoPass": false,
+            "timer": this.timers[this.selectedTimer],
+            "seconds": 0};
+            return data;
+        }
+        if (this.timers[this.selectedTimer] === this.timers[2]) {
+          var data = {
+            "slug": this.appState.slug,
+            "autoPass": this.autoPass,
+            "timer": this.timers[this.selectedTimer],
+            "seconds": +this.seconds + +this.minutes * 60};
+            return data;
+        }
+        return {};
+      },
+      isVisibleBar() {
+        return this.appState.type !== this.timers[1];
+      },
     },
 
     methods:{
+      url() {
+        return window.location.href;
+      },
+      copyLink() {
+        let textField =  document.getElementById("session-url");
+        textField.select();
+
+        try {
+          var successful = document.execCommand('copy');
+        } catch (err) {  
+        }
+  
+        window.getSelection().removeAllRanges();
+
+        return successful;
+      },
       isColoredBar(player) {
         if ((player.name === this.appState.activePlayer) && this.appState.active) {
           return "danger";
@@ -53,7 +105,9 @@ function init() {
         var name = player['name'];
         return `${name} ${result}`;
       },
-
+      onSubmit() {
+        console.log('On submit');
+      },
       api() {
         return new ApiClient();
       },
@@ -63,17 +117,19 @@ function init() {
         }
       },
       async createSession() {
-        let newState = await this.api().createSession(this.appState.slug);
+        let newState = await this.api().createSession(this.getCreateSessionData);
         if (newState["status"] !== "error") {
           await this.getSession();
           this.startPolling();
+
+          window.history.pushState({}, null, `/sessions/${this.appState.slug}`);
+
         }
       },
       async getSession() {
         let newState = await this.api().getSession(this.appState.slug);
 
         this.setState(newState);
-        window.history.pushState({}, null, `/sessions/${this.appState.slug}`);
       },
       async addPlayer(playerName) {
         let newState = await this.api().addPlayer(this.appState.slug, playerName);
