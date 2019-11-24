@@ -4,24 +4,24 @@ import random
 
 class Session:
 
-   iterator = count()
-   player_count = count()
+   counter = count()
 
    def __init__(self, slug, timer, seconds, auto_pass):
       self.slug = slug
-      self.id = self.iterator.__next__()
+      self.id = self.counter.__next__()
       self.version = time.time()
       self.timer = timer
       self.seconds = seconds
       self.auto_pass = auto_pass
 
+      self.player_counter = count()
       self.players = {}
       self.active_player = None
       self.any_timer_active = False
 
    def addPlayer(self, name):
       timer = self.timer(self.seconds)
-      self.players[name] = Player(name, timer, self.player_count.__next__()) 
+      self.players[name] = Player(name, timer, counter=self.player_counter)
       if self.active_player is None:
          self.active_player = name
 
@@ -54,10 +54,10 @@ class Session:
       return output
 
    def restart(self):
-      # to fix this, implement proper handling of timer
+
       for name in self.players:
          timer = self.timer(self.seconds)
-         self.players[name] = Player(name, timer, self.players[name].id)
+         self.players[name] = Player(name, timer, id=self.players[name].id)
       self.any_timer_active = False
 
    def shuffle(self):
@@ -86,6 +86,8 @@ class Session:
       old_id = self.players[self.active_player].id
       players_by_id = {p.id: p for p in self.players.values()}
       
+      print(players_by_id.keys())
+
       if old_id >= len(self.players) - 1:
          new_id = 0
       else:
@@ -98,9 +100,11 @@ class Session:
    def previousPlayer(self):
       if not self.any_timer_active:
          return
-
+      
       old_id = self.players[self.active_player].id
       players_by_id = {p.id: p for p in self.players.values()}
+  
+      print(players_by_id.keys())
       
       if old_id <= 0:
          new_id = len(self.players) - 1
@@ -116,7 +120,7 @@ class Session:
          return
       if self.active_player is None:
          return
-         
+
       self.players[self.active_player].start()
       self.any_timer_active = True
    
@@ -130,11 +134,16 @@ class Session:
 
 class Player:
 
-   def __init__(self, name, timer, id):
+   counter = count()
+
+   def __init__(self, name, timer, counter=count(), id=None):
       self.name = name
       self.timer = timer
-      self.id = id
-   
+      if id is None:
+         self.id = counter.__next__()
+      else:
+         self.id = id
+      
    def measure(self):
       return self.timer.time()
 

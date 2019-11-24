@@ -3,6 +3,7 @@
 <html>
 
 <head>
+  <title>Boardgame timer</title>
   <!-- Load required Bootstrap and BootstrapVue CSS -->
   <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
   <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
@@ -121,7 +122,7 @@
         <div class="form-group">
           <b-form-input id="session-name-input" v-model="appState.slug" type="text" placeholder="Enter session name">
           </b-form-input>
-          <b-button class="btn-block" v-on:click=createSession variant="dark">Create</b-button>
+          <b-button class="btn-block" v-on:click=createSession :disabled=!appState.slug variant="dark">Create</b-button>
 
         </div>
       </b-container>
@@ -134,12 +135,12 @@
         <b-button-group class="btn-block" size="lg">
           <b-button class="nav-btn" v-on:click=previousPlayer()> <img src="{% static 'icons/larrow.png' %}" />
           </b-button>
-          <b-button class="nav-btn" v-if="!appState.active" v-on:click=start()> <img
-              src="{% static 'icons/start.png' %}"/> </b-button>
-          <b-button class="nav-btn" v-if="appState.active" v-on:click=stop()> <img
-              src="{% static 'icons/stop.png' %}"/> </b-button>
-          <b-button class="nav-btn" v-on:click=nextPlayer()> <img 
-            src="{% static 'icons/rarrow.png' %}"/> </b-button>
+          <b-button class="nav-btn" v-if="!appState.active" v-on:click=start()> 
+            <img src="{% static 'icons/start.png' %}"/> </b-button>
+          <b-button class="nav-btn" v-if="appState.active" v-on:click=stop()> 
+            <img src="{% static 'icons/stop.png' %}"/> </b-button>
+          <b-button class="nav-btn" v-on:click=nextPlayer()> 
+            <img src="{% static 'icons/rarrow.png' %}"/> </b-button>
         </b-button-group>
       </b-container>
 

@@ -135,6 +135,7 @@ function init() {
         let newState = await this.api().addPlayer(this.appState.slug, playerName);
         
         if (newState["status"] !== "error") {
+          this.playerName = null;
           await this.getSession();
         }
       },

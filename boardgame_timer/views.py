@@ -4,6 +4,7 @@ import json
 from django.http import JsonResponse, HttpResponseNotFound
 from boardgame_timer.session import Session
 from boardgame_timer.timer import CountDownTimer, CountUpTimer, TimePerMoveTimer
+from django.views.decorators.http import require_http_methods
 
 supported_timers = {'CountDownTimer': CountDownTimer,
                     'CountUpTimer': CountUpTimer,
