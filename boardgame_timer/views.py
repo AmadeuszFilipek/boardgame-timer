@@ -5,11 +5,15 @@ from django.http import JsonResponse, HttpResponseNotFound
 from boardgame_timer.session import Session
 from boardgame_timer.timer import CountDownTimer, CountUpTimer, TimePerMoveTimer
 from django.views.decorators.http import require_http_methods
+import django.conf.global_settings as settings
 
 supported_timers = {'CountDownTimer': CountDownTimer,
                     'CountUpTimer': CountUpTimer,
                     'TimePerMoveTimer': TimePerMoveTimer}
 sessions = {}
+
+def getFavicon(request):
+   redirect(url=settings.STATIC_URL + 'static/icons/favicon.ico')
 
 def index(request):
 

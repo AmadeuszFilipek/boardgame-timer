@@ -7,6 +7,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='home'),
+    path('favicon.ico', views.getFavicon),
     path('sessions/<slug:session>', views.getSessionAndIndex, name='getSessionAndIndex'),
     
     path('api/sessions', views.createSession, name='createSession'),

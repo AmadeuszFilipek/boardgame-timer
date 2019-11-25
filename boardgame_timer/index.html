@@ -4,6 +4,8 @@
 
 <head>
   <title>Boardgame timer</title>
+  <link rel="shortcut icon" type="image/png" href="{% static 'icons/favicon.ico' %}"/>
+ 
   <!-- Load required Bootstrap and BootstrapVue CSS -->
   <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
   <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
@@ -16,7 +18,7 @@
   <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
   <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
 
-  <script type="module/javascript">
+  <script type="module">
     import ApiClient from "{% static 'js/api_client.js' %}";
     import App from "{% static 'js/app.js' %}";
   </script>
