@@ -23,4 +23,4 @@ urlpatterns = [
     path('api/sessions/<slug:session>/<slug:player>', views.addPlayer),
     path('api/sessions/<slug:session>/<slug:player>/toggle', views.togglePlayer),
     
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]

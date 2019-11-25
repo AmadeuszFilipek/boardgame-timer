@@ -86,8 +86,6 @@ class Session:
       old_id = self.players[self.active_player].id
       players_by_id = {p.id: p for p in self.players.values()}
       
-      print(players_by_id.keys())
-
       if old_id >= len(self.players) - 1:
          new_id = 0
       else:
@@ -103,9 +101,7 @@ class Session:
       
       old_id = self.players[self.active_player].id
       players_by_id = {p.id: p for p in self.players.values()}
-  
-      print(players_by_id.keys())
-      
+        
       if old_id <= 0:
          new_id = len(self.players) - 1
       else:

@@ -1,7 +1,5 @@
 class ApiClient {
 
-  path_prefix = "https://127.0.0.1:8000"
-
    async getSession(sessionSlug) {
       let res = await fetch('/api/sessions/' + sessionSlug);
       return await res.json();
