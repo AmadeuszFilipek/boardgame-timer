@@ -19,4 +19,8 @@ There are three types of timers available:
   with uncerain number of overall turns. You pass a turn if the time is over.
   
   
+  ![alt text](https://github.com/AmadeuszFilipek/boardgame-timer/blob/master/sample_game.png)
+  
+  
+  
 
