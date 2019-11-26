@@ -1,9 +1,6 @@
-# boardgame-timer
-
-# H1 Boardgame timer
+# Boardgame timer
 ---
-#### H4
-[Live on heroku](https://boardgame-timer.herokuapp.com)
+####[Live on heroku](https://boardgame-timer.herokuapp.com)
 ---
 This simple web app is created for managing time for board game sessions. Each player has his own clock timer.
 There are three types of timers available:
