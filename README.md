@@ -16,7 +16,7 @@ There are three types of timers available:
 + Time-per-move timer
 
   Every player has fixed time for each move. This mode promotes faster paced games 
-  with uncerain number of overall turns. You pass a turn if the time is over.
+  with uncerain number of overall turns. You pass a turn if the time is over. Also has auto-turn-pass option.
   
 
 #### Sample 25 min chess game
