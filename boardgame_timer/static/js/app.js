@@ -17,6 +17,7 @@ function init() {
       seconds: 0,
       poll: false,
       playerName: null,
+      errorMessage: "",
       appState: {
         version: 0,
         slug: ''
@@ -119,11 +120,13 @@ function init() {
       async createSession() {
         let newState = await this.api().createSession(this.getCreateSessionData);
         if (newState["status"] !== "error") {
+          this.errorMessage = "";
           await this.getSession();
           this.startPolling();
-
           window.history.pushState({}, null, `/sessions/${this.appState.slug}`);
 
+        } else {
+          this.errorMessage = newState["message"] 
         }
       },
       async getSession() {
@@ -135,8 +138,11 @@ function init() {
         let newState = await this.api().addPlayer(this.appState.slug, playerName);
         
         if (newState["status"] !== "error") {
+          this.errorMessage = "";
           this.playerName = null;
           await this.getSession();
+        } else {
+          this.errorMessage = newState["message"] 
         }
       },
       async togglePlayer(playerName) {
