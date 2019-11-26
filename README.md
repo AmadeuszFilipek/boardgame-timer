@@ -21,7 +21,7 @@ There are three types of timers available:
 
 #### Sample 25 min chess game
   
-          ![alt text](https://github.com/AmadeuszFilipek/boardgame-timer/blob/master/sample_game.png)
+![alt text](https://github.com/AmadeuszFilipek/boardgame-timer/blob/master/sample_game.png)
   
   
   
