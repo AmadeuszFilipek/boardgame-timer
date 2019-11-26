@@ -4,6 +4,7 @@
 
 This simple web app is created for managing time for board game sessions. Each player has his own clock timer.
 There are three types of timers available:
+*
 ⋅⋅* Count-down timer
 ⋅⋅⋅ Every player has fixed time for whole game. Players who got no time left usually lose the game.
 ⋅⋅* Count-up timer
