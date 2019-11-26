@@ -7,7 +7,7 @@ There are three types of timers available:
 
 + Count-down timer
 
-⋅⋅⋅Every player has fixed time for whole game. Players who got no time left usually lose the game.
+Every player has fixed time for whole game. Players who got no time left usually lose the game.
 
 + Count-up timer
 ⋅⋅Every player will have their time counted with no limit. This mode is usually used for penality-type play.
