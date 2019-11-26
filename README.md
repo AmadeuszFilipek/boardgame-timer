@@ -18,9 +18,8 @@ There are three types of timers available:
   Every player has fixed time for each move. This mode promotes faster paced games 
   with uncerain number of overall turns. You pass a turn if the time is over.
   
-  #####
+  ##### Sample chess game
   
-  ![alt text](https://github.com/AmadeuszFilipek/boardgame-timer/blob/master/sample_home.png)
   ![alt text](https://github.com/AmadeuszFilipek/boardgame-timer/blob/master/sample_game.png)
   
   
