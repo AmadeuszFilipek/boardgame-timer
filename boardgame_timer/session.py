@@ -70,23 +70,24 @@ class Session:
          player.id = i 
 
    def movePlayer(self, player_name, new_id):
-      if new_id < 0 or new_id >= len(self.players):
+      if new_id < 0:
          return
 
       moved_player = self.players[player_name]
 
       players = list(self.players.values())
+      # sempix 0 / ziemniak 1
+
       players.sort(key=lambda p: p.id)
 
-      players.insert(new_id, 'placeholder')
-
       players.remove(moved_player)
+      players.insert(new_id, 'placeholder')
 
       changed_new_id = players.index('placeholder')
       players[changed_new_id] = moved_player
 
       for i, p in enumerate(players):
-         p.id = i 
+         p.id = i
 
    def toggle(self, player):
       if player == self.active_player:

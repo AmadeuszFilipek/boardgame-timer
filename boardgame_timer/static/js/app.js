@@ -67,11 +67,13 @@ function init() {
 
     methods:{
       async dispatchReorder(e) {
+        this.haltPooling = true;
         console.log(e);
         const dragged_player = e.moved.element.name
         const new_id = e.moved.newIndex;
         await this.api().movePlayer(this.appState.slug, dragged_player, new_id)
-      },  
+        this.haltPooling = false;
+      },
       url() {
         return window.location.href;
       },
@@ -207,7 +209,9 @@ function init() {
         }
       },
       refresh() {
-        this.getSession();
+        if (this.haltPooling === false) {
+          this.getSession();
+        }
         setTimeout(this.refresh, 1000);
       },
       startPolling() {
