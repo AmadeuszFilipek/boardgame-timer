@@ -69,6 +69,25 @@ class Session:
       for i, player in zip(player_ids, self.players.values()):
          player.id = i 
 
+   def movePlayer(self, player_name, new_id):
+      if new_id < 0 or new_id >= len(self.players):
+         return
+
+      moved_player = self.players[player_name]
+
+      players = list(self.players.values())
+      players.sort(key=lambda p: p.id)
+
+      players.insert(new_id, 'placeholder')
+
+      players.remove(moved_player)
+
+      changed_new_id = players.index('placeholder')
+      players[changed_new_id] = moved_player
+
+      for i, p in enumerate(players):
+         p.id = i 
+
    def toggle(self, player):
       if player == self.active_player:
          self.players[self.active_player].toggle()

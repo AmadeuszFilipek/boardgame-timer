@@ -23,5 +23,5 @@ urlpatterns = [
     
     path('api/sessions/<str:session>/<str:player>', views.addPlayer),
     path('api/sessions/<str:session>/<str:player>/toggle', views.togglePlayer),
-    
+    path('api/sessions/<str:session>/<str:player>/move/<int:placement>', views.movePlayer)
 ]

@@ -25,6 +25,10 @@ class ApiClient {
     return await this.post('/api/sessions/' + sessionSlug + '/' + playerName + '/toggle');
    }
 
+   async movePlayer(sessionSlug, playerName, new_placement) {
+    return await this.post('/api/sessions/' + sessionSlug + '/' + playerName + '/move/' + new_placement);
+   }
+
    async start(sessionSlug) {
     return await this.post('/api/sessions/' + sessionSlug + '/start');
    }
