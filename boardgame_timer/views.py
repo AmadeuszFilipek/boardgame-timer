@@ -79,6 +79,15 @@ def togglePlayer(request, session, player):
 
    return JsonResponse({'status': 'error'})
 
+def movePlayer(request, session, player, placement):
+   if request.method == "POST":
+      if session in sessions:
+         if player in sessions[session].players:
+            sessions[session].movePlayer(player, placement)
+            return JsonResponse({'status': 'ok'})
+
+   return JsonResponse({'status': 'error'})
+
 def shufflePlayers(request, session):
    if session in sessions:
       sessions[session].shuffle()
@@ -123,5 +132,6 @@ def restart(request, session):
          return JsonResponse({'status': 'ok'})
    
    return JsonResponse({'status': 'error'})
+
 
 

@@ -17,6 +17,7 @@ function init() {
       seconds: 0,
       poll: false,
       playerName: null,
+      haltPooling: false,
       errorMessage: "",
       appState: {
         version: 0,
@@ -65,6 +66,12 @@ function init() {
     },
 
     methods:{
+      async dispatchReorder(e) {
+        console.log(e);
+        const dragged_player = e.moved.element.name
+        const new_id = e.moved.newIndex;
+        await this.api().movePlayer(this.appState.slug, dragged_player, new_id)
+      },  
       url() {
         return window.location.href;
       },
@@ -118,6 +125,10 @@ function init() {
         }
       },
       async createSession() {
+        if (this.appState.slug === null || this.appState.slug === '') {
+          this.errorMessage = "Session name is empty."
+          return 0
+        }
         let newState = await this.api().createSession(this.getCreateSessionData);
         if (newState["status"] !== "error") {
           this.errorMessage = "";
@@ -135,6 +146,7 @@ function init() {
         this.setState(newState);
       },
       async addPlayer(playerName) {
+        if (playerName === null || playerName === '') return 0 
         let newState = await this.api().addPlayer(this.appState.slug, playerName);
         
         if (newState["status"] !== "error") {

@@ -3,7 +3,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'nu_0!kcvi8^una38f#w2b9t5!6ktf*t4!$vygw@kc5e*x960h^'
 
-DEBUG = False
+DEBUG = True
 
 # # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

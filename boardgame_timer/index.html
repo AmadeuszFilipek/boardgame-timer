@@ -18,6 +18,11 @@
   <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
   <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
 
+  <!-- Load Sortable (https://cdnjs.com/) -->
+  <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+  <!-- Load Vue.Draggable (https://cdnjs.com/) -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
+
   <script type="module">
     import ApiClient from "{% static 'js/api_client.js' %}";
     import App from "{% static 'js/app.js' %}";
@@ -122,7 +127,8 @@
       <b-container fluid>
           <b-alert show variant="warning" v-if="errorMessage != '' ">[[errorMessage]]</b-alert>
         <div class="form-group">
-          <b-form-input id="session-name-input" v-model="appState.slug" type="text" placeholder="Enter session name">
+          <b-form-input id="session-name-input" v-model="appState.slug"
+            type="text" placeholder="Enter session name" v-on:keyup.enter=createSession>
           </b-form-input>
           <b-button class="btn-block" v-on:click=createSession :disabled="appState.slug === ''" variant="dark">Create</b-button>
 
@@ -148,13 +154,20 @@
 
       <b-container fluid class="margins">
       <b-progress-group vertical>
-        <b-button class="btn-block player-btn" v-for="player in appState.players" v-on:click=togglePlayer(player.name)
-          v-bind:variant="getPlayerVariant(player)">
-          <p class="player-text">[[ playerBaner(player) ]]</p>
-          <b-progress v-bind:variant="isColoredBar(player)" :value="player.ratio" :max="1" v-if="isVisibleBar"
-            v-bind:animated="isActiveBar(player)"> </b-progress>
-        </b-button>
-        </b-button-group>
+        <draggable v-model="appState.players" @change="dispatchReorder"
+         @start="drag=true" @end="drag=false">
+
+          
+          <b-button class="btn-block player-btn" v-for="player in appState.players" :key='player.id'
+            v-on:click=togglePlayer(player.name) v-bind:variant="getPlayerVariant(player)">
+            <p class="player-text">[[ playerBaner(player) ]]</p>
+            <b-progress v-bind:variant="isColoredBar(player)" :value="player.ratio" :max="1" v-if="isVisibleBar"
+              v-bind:animated="isActiveBar(player)"> </b-progress>
+          </b-button>
+      
+      
+        </draggable>
+      </b-progress-group>
       </b-container>
     </div>
 
@@ -176,7 +189,8 @@
         <b-alert show variant="warning" v-if="errorMessage != '' ">[[errorMessage]]</b-alert>
         <b-input-group class="mt-3" size="lg">
 
-          <b-form-input id="player-name-input" type="text" v-model=playerName type="text" placeholder="Add player">
+          <b-form-input id="player-name-input" type="text"
+            v-model=playerName type="text" placeholder="Add player" v-on:keyup.enter=addPlayer(playerName)>
           </b-form-input>
 
           <b-input-group-append>
