@@ -1,1 +1,0 @@
-web: gunicorn boardgame_timer.wsgi
