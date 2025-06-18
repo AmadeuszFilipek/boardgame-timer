@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    # The command from the Dockerfile will be used:
+    # gunicorn boardgame_timer.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app  # Mounts the current directory to /app in the container
+      # This ensures that if db.sqlite3 is created in /app, it's persisted
+      # via the host bind mount. For more explicit control over the db file,
+      # we can map a named volume directly to the db file.
+      # Django's default DATABASES setting will place db.sqlite3 in BASE_DIR (which is /app).
+      # So, .:/app covers it.
+      # If we want to ensure the db is in a separate volume, independent of the code mount:
+      # We would need to adjust settings.py to point DATABASES['default']['NAME'] to e.g. /app/data/db.sqlite3
+      # and then mount a volume to /app/data.
+      # For now, relying on .:/app to persist db.sqlite3 at /app/db.sqlite3 is the simplest.
+      # To be more robust and avoid the db file being part of the general code mount,
+      # let's use a named volume for the database file specifically.
+      # This also means if you blow away your local code, the db in the named volume persists.
+      - sqlite_volume:/app/db.sqlite3
+    ports:
+      - "8000:8000"
+    # Add environment variables if needed for Django settings, e.g., SECRET_KEY
+    # environment:
+    #   - SECRET_KEY=${SECRET_KEY}
+    #   - DEBUG=${DEBUG}
+
+volumes:
+  sqlite_volume: # Persists the SQLite database
