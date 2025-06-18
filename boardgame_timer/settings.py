@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'game_sessions',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,7 @@ MIDDLEWARE = [
 ]
 
 WSGI_APPLICATION = 'boardgame_timer.wsgi.application'
+ASGI_APPLICATION = 'boardgame_timer.asgi.application'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'boardgame_timer/static')
