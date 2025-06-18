@@ -32,6 +32,9 @@
   <!-- Load Vue.Draggable (https://cdnjs.com/) -->
   <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script>
 
+  <!-- Load qrcode.vue -->
+  <script src="https://unpkg.com/qrcode.vue@1.7.0/dist/qrcode.vue.min.js"></script>
+
   <script type="module">
     import ApiClient from "{% static 'js/api_client.js' %}";
     import App from "{% static 'js/app.js' %}";
@@ -65,6 +68,14 @@
       color: black;
       font-size: 5vw;
       font-family: monospace;
+    }
+    .icon-button {
+      /* Adjust padding as needed, Bootstrap might add some by default */
+      padding: 0.5rem;
+    }
+    .icon-button img {
+      width: 24px; /* Or any appropriate size */
+      height: 24px; /* Or any appropriate size */
     }
     [v-cloak] {
       display: none;
@@ -211,12 +222,24 @@
       </b-container>
 
       <b-container fluid>
-        <b-button class="btn-block" v-on:click=copyLink variant="dark">
-          Share the link
-        </b-button>
-        <b-input id="session-url" type='text' v-bind:value="url()">
+        <b-button-group class="btn-block">
+          <b-button class="icon-button" v-on:click=copyLink variant="dark">
+            <img src="{% static 'icons/share.svg' %}" alt="Share" />
+          </b-button>
+          <b-button class="icon-button" variant="dark" v-b-modal.qr-code-modal>
+            <img src="{% static 'icons/qrcode.svg' %}" alt="QR Code" />
+          </b-button>
+        </b-button-group>
+        <b-input id="session-url" class="mt-2" type='text' v-bind:value="url()">
         </b-input>
       </b-container>
+
+      <!-- QR Code Modal -->
+      <b-modal id="qr-code-modal" title="Scan QR Code to Share Session" centered hide-footer>
+        <div class="d-flex justify-content-center">
+          <qrcode-vue :value="url()" :size="200" level="H"></qrcode-vue>
+        </div>
+      </b-modal>
 
     </div>
   </div>

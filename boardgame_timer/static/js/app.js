@@ -4,6 +4,9 @@ import ApiClient from './api_client.js';
 function init() {
   console.log('init');
 
+  // Register qrcode-vue component globally
+  Vue.component('qrcode-vue', QRCodeVue);
+
   let app = new Vue({
     delimiters: ['[[', ']]'],
     el: '#app',
