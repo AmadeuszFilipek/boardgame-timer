@@ -3,8 +3,7 @@ version: '3.8'
 services:
   web:
     build: .
-    # The command from the Dockerfile will be used:
-    # gunicorn boardgame_timer.wsgi:application --bind 0.0.0.0:8000
+    command: sh -c "python manage.py migrate && gunicorn boardgame_timer.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - .:/app  # Mounts the current directory to /app in the container
       # This ensures that if db.sqlite3 is created in /app, it's persisted
