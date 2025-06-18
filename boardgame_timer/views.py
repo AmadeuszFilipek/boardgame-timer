@@ -2,6 +2,8 @@ import json
 import random
 import time
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -186,6 +188,17 @@ def addPlayer(request, session_slug, player_name):
    
    game_session.version = time.time()
    game_session.save()
+
+   channel_layer = get_channel_layer()
+   updated_state_dict = _game_session_to_dict(game_session)
+   session_group_name = f'session_{game_session.slug}'
+   async_to_sync(channel_layer.group_send)(
+       session_group_name,
+       {
+           'type': 'send_game_state',
+           'state': updated_state_dict
+       }
+   )
    return JsonResponse({'status': 'ok'})
 
 @require_http_methods(["POST"])
@@ -230,6 +243,16 @@ def togglePlayer(request, session_slug, player_name):
     game_session.version = time.time()
     game_session.save()
 
+    channel_layer = get_channel_layer()
+    updated_state_dict = _game_session_to_dict(game_session)
+    session_group_name = f'session_{game_session.slug}'
+    async_to_sync(channel_layer.group_send)(
+        session_group_name,
+        {
+            'type': 'send_game_state',
+            'state': updated_state_dict
+        }
+    )
     return JsonResponse({'status': 'ok'})
 
 
@@ -254,6 +277,17 @@ def _change_active_player(game_session, new_active_player_model):
     game_session.version = time.time()
     game_session.save()
 
+    channel_layer = get_channel_layer()
+    updated_state_dict = _game_session_to_dict(game_session)
+    session_group_name = f'session_{game_session.slug}'
+    async_to_sync(channel_layer.group_send)(
+        session_group_name,
+        {
+            'type': 'send_game_state',
+            'state': updated_state_dict
+        }
+    )
+
 
 @require_http_methods(["POST"])
 def nextPlayer(request, session_slug):
@@ -274,6 +308,7 @@ def nextPlayer(request, session_slug):
     new_active_player = players[next_idx]
 
     _change_active_player(game_session, new_active_player)
+    # _change_active_player now sends the game state
     return JsonResponse(_game_session_to_dict(game_session))
 
 
@@ -296,6 +331,7 @@ def previousPlayer(request, session_slug):
     new_active_player = players[prev_idx]
 
     _change_active_player(game_session, new_active_player)
+    # _change_active_player now sends the game state
     return JsonResponse(_game_session_to_dict(game_session))
 
 
@@ -314,6 +350,17 @@ def start(request, session_slug): # Start current active player's timer
         game_session.any_timer_active = True
         game_session.version = time.time()
         game_session.save()
+
+        channel_layer = get_channel_layer()
+        updated_state_dict = _game_session_to_dict(game_session)
+        session_group_name = f'session_{game_session.slug}'
+        async_to_sync(channel_layer.group_send)(
+            session_group_name,
+            {
+                'type': 'send_game_state',
+                'state': updated_state_dict
+            }
+        )
         return JsonResponse({'status': 'ok'})
     return JsonResponse({'status': 'ok', 'message': 'Timer already running.'})
 
@@ -334,6 +381,17 @@ def stop(request, session_slug): # Stop current active player's timer
         game_session.any_timer_active = False # Assuming only one timer active
         game_session.version = time.time()
         game_session.save()
+
+        channel_layer = get_channel_layer()
+        updated_state_dict = _game_session_to_dict(game_session)
+        session_group_name = f'session_{game_session.slug}'
+        async_to_sync(channel_layer.group_send)(
+            session_group_name,
+            {
+                'type': 'send_game_state',
+                'state': updated_state_dict
+            }
+        )
         return JsonResponse({'status': 'ok'})
     return JsonResponse({'status': 'ok', 'message': 'Timer already stopped.'})
 
@@ -351,6 +409,17 @@ def restart(request, session_slug):
     # game_session.active_player_name = None # Or reset to the first player? Current behavior is to keep active player.
     game_session.version = time.time()
     game_session.save()
+
+    channel_layer = get_channel_layer()
+    updated_state_dict = _game_session_to_dict(game_session)
+    session_group_name = f'session_{game_session.slug}'
+    async_to_sync(channel_layer.group_send)(
+        session_group_name,
+        {
+            'type': 'send_game_state',
+            'state': updated_state_dict
+        }
+    )
     return JsonResponse({'status': 'ok'})
 
 @require_http_methods(["POST"])
@@ -369,6 +438,17 @@ def shufflePlayers(request, session_slug):
 
     game_session.version = time.time()
     game_session.save()
+
+    channel_layer = get_channel_layer()
+    updated_state_dict = _game_session_to_dict(game_session)
+    session_group_name = f'session_{game_session.slug}'
+    async_to_sync(channel_layer.group_send)(
+        session_group_name,
+        {
+            'type': 'send_game_state',
+            'state': updated_state_dict
+        }
+    )
     return JsonResponse({'status': 'ok'})
 
 @require_http_methods(["POST"])
@@ -405,6 +485,17 @@ def movePlayer(request, session_slug, player_name, new_placement_str):
 
     game_session.version = time.time()
     game_session.save()
+
+    channel_layer = get_channel_layer()
+    updated_state_dict = _game_session_to_dict(game_session)
+    session_group_name = f'session_{game_session.slug}'
+    async_to_sync(channel_layer.group_send)(
+        session_group_name,
+        {
+            'type': 'send_game_state',
+            'state': updated_state_dict
+        }
+    )
     return JsonResponse({'status': 'ok'})
 
 # Note: Auto-pass logic (is_state_to_be_changed) is not implemented in GET requests (e.g., _game_session_to_dict).

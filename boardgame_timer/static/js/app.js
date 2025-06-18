@@ -15,10 +15,14 @@ function init() {
       selectedTimer: 0,
       minutes: 1,
       seconds: 0,
-      poll: false,
       playerName: null,
-      haltPooling: false,
       errorMessage: "",
+      socket: null,
+      localActivePlayerTime: 0, // Holds the locally calculated time for the active player
+      serverTimeSnapshot: 0,    // Server time for active player at the moment of last sync
+      lastSyncBrowserTime: 0,   // Browser's Date.now() at the moment of last sync
+      jsTimerIntervalId: null,  // ID of the JavaScript interval for the local timer
+      activePlayerData: null,   // Add a small helper to access active player's data easily
       appState: {
         version: 0,
         slug: ''
@@ -28,7 +32,8 @@ function init() {
     // this is for other players, not creator of session
     async mounted() {
       if (this.appState.version > 0) {
-        this.startPolling();
+        this.connectWebSocket();
+        this.startJsTimer();
       }
     },
 
@@ -67,12 +72,10 @@ function init() {
 
     methods:{
       async dispatchReorder(e) {
-        this.haltPooling = true;
         console.log(e);
         const dragged_player = e.moved.element.name
         const new_id = e.moved.newIndex;
         await this.api().movePlayer(this.appState.slug, dragged_player, new_id)
-        this.haltPooling = false;
       },
       url() {
         return window.location.href;
@@ -108,11 +111,14 @@ function init() {
         }
       },
       playerBaner(player) {
-        // return full player name and time
+        let timeToDisplay = player.time;
+        // The active player's time is updated by updateLocalTimerDisplay directly in appState.players
+        // So, player.time already reflects the JS timer's value for the active player.
+
         var date = new Date(null);
-        date.setSeconds(player['time']);
+        date.setSeconds(timeToDisplay);
         var result = date.toISOString().substr(11, 8);
-        var name = player['name'];
+        var name = player.name;
         return `${name} ${result}`;
       },
       onSubmit() {
@@ -134,8 +140,9 @@ function init() {
         let newState = await this.api().createSession(this.getCreateSessionData);
         if (newState["status"] !== "error") {
           this.errorMessage = "";
-          await this.getSession();
-          this.startPolling();
+          await this.getSession(); // Initial fetch to get the full state
+          this.connectWebSocket();
+          this.startJsTimer();
           window.history.pushState({}, null, `/sessions/${this.appState.slug}`);
 
         } else {
@@ -154,7 +161,7 @@ function init() {
         if (newState["status"] !== "error") {
           this.errorMessage = "";
           this.playerName = null;
-          await this.getSession();
+          // await this.getSession(); // WebSocket will update the state
         } else {
           this.errorMessage = newState["message"] 
         }
@@ -163,62 +170,125 @@ function init() {
         let newState = await this.api().togglePlayer(this.appState.slug, playerName);
         
         if (newState["status"] !== "error") {
-          await this.getSession();
+          // await this.getSession(); // WebSocket will update the state
         }
       },
       async nextPlayer() {
         let newState = await this.api().nextPlayer(this.appState.slug);
 
         if (newState["status"] !== "error") {
-          await this.getSession();
+          // await this.getSession(); // WebSocket will update the state
         }
       },
       async previousPlayer() {
         let newState = await this.api().previousPlayer(this.appState.slug);
 
         if (newState["status"] !== "error") {
-          await this.getSession();
+          // await this.getSession(); // WebSocket will update the state
         }
       },
       async start() {
         let newState = await this.api().start(this.appState.slug);
 
         if (newState["status"] !== "error") {
-          await this.getSession();
+          // await this.getSession(); // WebSocket will update the state
         }
       },
       async stop() {
           let newState = await this.api().stop(this.appState.slug);
   
           if (newState["status"] !== "error") {
-            await this.getSession();
+            // await this.getSession(); // WebSocket will update the state
           }
       },
       async shuffle() {
         let newState = await this.api().shuffle(this.appState.slug);
 
         if (newState["status"] !== "error") {
-          await this.getSession();
+          // await this.getSession(); // WebSocket will update the state
         }
       },
       async restart() {
         let newState = await this.api().restart(this.appState.slug);
 
         if (newState["status"] !== "error") {
-          await this.getSession();
+          // await this.getSession(); // WebSocket will update the state
         }
       },
-      refresh() {
-        if (this.haltPooling === false) {
-          this.getSession();
+      connectWebSocket() {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+          this.socket.close();
         }
-        setTimeout(this.refresh, 1000);
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/session/${this.appState.slug}/`;
+
+        this.socket = new WebSocket(wsUrl);
+
+        this.socket.onopen = () => {
+          console.log("WebSocket connection established");
+        };
+
+        this.socket.onmessage = (event) => {
+          console.log("WebSocket message received:", event.data);
+          const newState = JSON.parse(event.data);
+          this.setState(newState);
+          this.startJsTimer(); // Reset and sync JS timer with new server state
+        };
+
+        this.socket.onclose = () => {
+          console.log("WebSocket connection closed");
+          // Optionally, you might want to attempt reconnection here or notify the user.
+        };
+
+        this.socket.onerror = (error) => {
+          console.error("WebSocket error:", error);
+          // Optionally, handle specific errors or notify the user.
+        };
       },
-      startPolling() {
-        if (this.pool !== true) {
-          console.log('starting pooling')
-          setTimeout(this.refresh(), 1000);
-          this.poll = true;
+      updateLocalTimerDisplay() {
+        if (this.appState.active && this.appState.activePlayer && this.activePlayerData) {
+          const elapsedSinceSync = (Date.now() - this.lastSyncBrowserTime) / 1000; // in seconds
+          let newTime;
+          if (this.appState.type === "CountUpTimer") {
+            newTime = this.serverTimeSnapshot + elapsedSinceSync;
+          } else { // For CountDownTimer and TimePerMoveTimer
+            newTime = this.serverTimeSnapshot - elapsedSinceSync;
+          }
+          this.localActivePlayerTime = Math.max(0, newTime);
+
+          const activeP = this.appState.players.find(p => p.name === this.appState.activePlayer);
+          if (activeP) {
+            activeP.time = this.localActivePlayerTime;
+            if (this.appState.type !== "CountUpTimer" && this.appState.initialSeconds > 0) {
+                activeP.ratio = this.localActivePlayerTime / this.appState.initialSeconds;
+            } else if (this.appState.type === "CountUpTimer") {
+                activeP.ratio = 0; // Or some other logic for count-up ratio
+            } else {
+                activeP.ratio = 0;
+            }
+          }
+        }
+      },
+      startJsTimer() {
+        clearInterval(this.jsTimerIntervalId);
+
+        if (this.appState.active && this.appState.activePlayer) {
+          this.activePlayerData = this.appState.players.find(p => p.name === this.appState.activePlayer);
+          if (this.activePlayerData) {
+            this.serverTimeSnapshot = this.activePlayerData.time;
+            this.lastSyncBrowserTime = Date.now();
+            this.localActivePlayerTime = this.activePlayerData.time;
+
+            this.jsTimerIntervalId = setInterval(() => {
+              this.updateLocalTimerDisplay();
+            }, 100);
+          } else {
+            this.activePlayerData = null; // Should not happen if appState is consistent
+          }
+        } else {
+          this.activePlayerData = null;
+          this.localActivePlayerTime = 0;
         }
       }
     }
