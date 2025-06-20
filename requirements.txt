@@ -1,8 +1,0 @@
-Django==5.2.3
-django-cors-headers==4.7.0
-gunicorn==23.0.0
-pytz==2025.2
-sqlparse==0.5.3
-whitenoise==6.9.0
-channels~=3.0.0
-channels-redis~=3.0.0
