@@ -3,7 +3,7 @@ name = "app"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "google-labs-jules[bot]",email = "161369871+google-labs-jules[bot]@users.noreply.github.com"}
+    {name = "Amadeusz Filipek",email = "amadeusz.filipek@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
