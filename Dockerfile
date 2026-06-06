@@ -1,27 +1,43 @@
-# Use python:slim as the base image
-FROM python:slim
+# Use a Python image with uv pre-installed
+FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+
+# Setup a non-root user
+RUN groupadd --system --gid 999 nonroot \
+    && useradd --system --gid 999 --uid 999 --create-home nonroot
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV UV_NO_DEV=1
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
 
 # Set up a working directory
 WORKDIR /app
 
-# Install Poetry
-RUN pip install poetry
+# Copy pyproject.toml and uv.lock
+COPY pyproject.toml uv.lock* ./
 
-# Copy pyproject.toml and poetry.lock
-COPY pyproject.toml poetry.lock* ./
+# Install dependencies using uv
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project
 
 # Copy the rest of the application code
 COPY . .
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked
 
-# Install dependencies using Poetry
-RUN poetry install --no-root --only main --no-interaction --no-ansi
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Expose port 8000
-EXPOSE 8000
+# Reset the entrypoint, don't invoke `uv`
+ENTRYPOINT []
 
-# Set the command to run Gunicorn using Poetry
-CMD ["poetry", "run", "gunicorn", "boardgame_timer.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Use the non-root user to run our application
+USER nonroot
+
+# Run Gunicorn
+CMD ["uv", "run", "gunicorn", "boardgame_timer.wsgi:application", "--bind", "0.0.0.0:8000"]
