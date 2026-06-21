@@ -176,10 +176,12 @@
 	})
 
 	function initPlayers(cfg: GameConfig): PlayerState[] {
-		return cfg.players.map((name) => ({
+		return cfg.players.map((name, i) => ({
 			name,
+			color: cfg.colors?.[i] ?? '#e0e0e0',
 			totalMs: cfg.mode === 'countup' ? 0 : cfg.timeLimitMs,
 			moveMs: cfg.timeLimitMs,
+			boostsLeft: cfg.boostCount ?? 0,
 			isEliminated: false
 		}))
 	}
@@ -211,8 +213,19 @@
 			player.moveMs = Math.max(0, player.moveMs - elapsed)
 			player.totalMs += elapsed
 			checkWarnings(player.moveMs, activeIndex)
-			if (player.moveMs === 0 && config!.autoPass) {
-				advanceToNextPlayer()
+			if (player.moveMs === 0) {
+				if (player.boostsLeft > 0) {
+					player.boostsLeft -= 1
+					player.moveMs = (config!.boostSeconds ?? 30) * 1000
+					warnedMs[activeIndex] = new Set()
+					lastWarnedSecond = -1
+					return
+				}
+				if (config!.autoPass) {
+					advanceToNextPlayer()
+				} else {
+					stopTimer()
+				}
 				return
 			}
 		}
@@ -244,6 +257,9 @@
 
 	function advanceToNextPlayer() {
 		stopTimer()
+		if (config?.mode === 'countdown' && (config.incrementMs ?? 0) > 0 && !players[activeIndex].isEliminated) {
+			players[activeIndex].totalMs += config.incrementMs
+		}
 		if (config?.mode === 'per-move') {
 			players[activeIndex].moveMs = config.timeLimitMs
 		}
@@ -303,24 +319,7 @@
 <main>
 	{#if !config}
 		<p>Loading...</p>
-	{:else if finished}
-		<h1>Game Over</h1>
-		{#if config.mode === 'countdown'}
-			{@const winner = players.find((p) => !p.isEliminated)}
-			{#if winner}
-				<p><strong>{winner.name}</strong> wins with {formatTime(winner.totalMs)} remaining!</p>
-			{:else}
-				<p>All players eliminated — it's a draw!</p>
-			{/if}
-		{/if}
-		<h2>Final Times</h2>
-		{#each [...players].sort((a, b) => config!.mode === 'countup' ? a.totalMs - b.totalMs : b.totalMs - a.totalMs) as player, i}
-			<p>#{i + 1} {player.name} — {formatTime(player.totalMs)} {player.isEliminated ? '(eliminated)' : ''}</p>
-		{/each}
-		<button onclick={endGame}>Back to Setup</button>
 	{:else}
-		<h1>{modeLabel(config.mode)}</h1>
-
 		<div class="players">
 			{#each players as player, i}
 				<button
@@ -328,24 +327,32 @@
 					class:active={i === activeIndex}
 					class:eliminated={player.isEliminated}
 					class:paused={i === activeIndex && !running}
+					style="--c: {player.color}"
 					onclick={() => selectPlayer(i)}
 					disabled={player.isEliminated}
 				>
 					<div class="name">{player.name}</div>
 					<div class="time">{formatTime(getDisplayTime(player))}</div>
-					{#if config.mode === 'per-move'}
+					{#if config.mode === 'per-move' && i === activeIndex}
 						<div class="total">Total: {formatTime(player.totalMs)}</div>
 					{/if}
+					{#if config.mode === 'per-move' && (config.boostCount ?? 0) > 0}
+						<div class="boosts">
+							{#each Array(config.boostCount) as _, b}
+								<span class="boost-dot" class:used={b >= player.boostsLeft}></span>
+							{/each}
+						</div>
+					{/if}
 					{#if player.isEliminated}
-						<div class="tag">OUT</div>
+						<div class="tag tag-out">OUT</div>
 					{:else if i === activeIndex}
-						<div class="tag">{running ? 'YOUR TURN' : 'PAUSED'}</div>
+						<div class="tag tag-turn">{running ? 'YOUR TURN' : 'PAUSED'}</div>
 					{/if}
 				</button>
 			{/each}
 		</div>
 
-		<button class="next-btn" onclick={passTurn}>NEXT →</button>
+		<button class="next-btn" onclick={passTurn}>Next →</button>
 
 		<div class="secondary-controls">
 			<button
@@ -364,72 +371,124 @@
 <style>
 	.players {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 1rem;
+		flex-direction: column;
+		gap: 0.75rem;
 		margin: 1rem 0;
 	}
 
 	.player {
-		border: 2px solid #ccc;
-		border-radius: 8px;
-		padding: 1rem;
-		min-width: 150px;
+		width: 100%;
+		border: 2px solid color-mix(in srgb, var(--c) 30%, #e0e0e0);
+		border-radius: 12px;
+		padding: 0.75rem 1rem;
 		text-align: center;
 		background: white;
 		cursor: pointer;
+		transition: border-color 0.2s, background 0.2s, padding 0.2s;
 	}
 
 	.player.active {
-		border-color: #000;
+		background: color-mix(in srgb, var(--c) 10%, white);
+		border-color: var(--c);
 		border-width: 3px;
-		background: #f5f5f5;
+		padding: 1.25rem 1rem;
 	}
 
 	.player.paused {
-		border-color: #888;
-		background: #fafafa;
+		background: color-mix(in srgb, var(--c) 6%, white);
+		border-color: color-mix(in srgb, var(--c) 50%, #ccc);
 	}
 
 	.player.eliminated {
-		opacity: 0.4;
+		opacity: 0.35;
 		cursor: default;
 	}
 
 	.name {
+		font-size: 0.9rem;
+		font-weight: 700;
+		margin-bottom: 0.2rem;
+		color: var(--c);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.player.active .name {
 		font-size: 1rem;
-		font-weight: bold;
-		margin-bottom: 0.25rem;
 	}
 
 	.time {
-		font-size: 2.5rem;
+		font-size: 2rem;
 		font-family: monospace;
 		font-weight: bold;
+		color: var(--c);
+		line-height: 1.1;
+	}
+
+	.player.active .time {
+		font-size: 4.5rem;
 	}
 
 	.total {
-		font-size: 0.9rem;
-		color: #555;
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--c) 60%, #888);
+		margin-top: 0.25rem;
+	}
+
+	.boosts {
+		display: flex;
+		justify-content: center;
+		gap: 0.35rem;
+		margin-top: 0.5rem;
+	}
+
+	.boost-dot {
+		width: 0.55rem;
+		height: 0.55rem;
+		border-radius: 50%;
+		background: var(--c);
+		transition: opacity 0.2s, background 0.2s;
+	}
+
+	.boost-dot.used {
+		background: transparent;
+		outline: 1.5px solid color-mix(in srgb, var(--c) 40%, transparent);
 	}
 
 	.tag {
-		font-size: 0.75rem;
-		font-weight: bold;
-		margin-top: 0.5rem;
+		display: inline-block;
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		padding: 0.2rem 0.6rem;
+		border-radius: 99px;
+		margin-top: 0.6rem;
+	}
+
+	.tag-turn {
+		background: color-mix(in srgb, var(--c) 15%, transparent);
+		color: var(--c);
+	}
+
+	.tag-out {
+		background: #f0f0f0;
+		color: #888;
 	}
 
 	.next-btn {
 		display: block;
 		width: 100%;
-		padding: 1.25rem;
-		font-size: 1.75rem;
-		font-weight: bold;
-		background: #000;
+		padding: 1.1rem;
+		font-size: 1.25rem;
+		font-weight: 700;
+		background: #111;
 		color: #fff;
 		border: none;
 		border-radius: 12px;
 		cursor: pointer;
-		margin-top: 1.5rem;
+		margin-top: 0.5rem;
+		letter-spacing: 0.02em;
 	}
 
 	.next-btn:active {
@@ -439,7 +498,7 @@
 	.secondary-controls {
 		display: flex;
 		justify-content: center;
-		margin-top: 1rem;
+		margin-top: 0.75rem;
 	}
 
 	.end-btn {
@@ -447,13 +506,19 @@
 		overflow: hidden;
 		cursor: pointer;
 		user-select: none;
+		padding: 0.5rem 1.25rem;
+		border: 1.5px solid #ddd;
+		border-radius: 8px;
+		background: white;
+		font-size: 0.875rem;
+		color: #888;
 	}
 
 	.end-btn::after {
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: rgba(200, 0, 0, 0.25);
+		background: rgba(200, 0, 0, 0.18);
 		transform: scaleX(0);
 		transform-origin: left;
 	}
