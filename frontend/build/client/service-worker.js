@@ -1,0 +1,1 @@
+var e=self;e.addEventListener(`install`,()=>e.skipWaiting()),e.addEventListener(`activate`,t=>t.waitUntil(e.clients.claim())),e.addEventListener(`fetch`,e=>e.respondWith(fetch(e.request)));
