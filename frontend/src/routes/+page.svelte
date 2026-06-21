@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import type { GameConfig, TimerMode } from '$lib/types.js'
+	import Sortable from 'sortablejs'
 
 	const PALETTE = [
 		'#c0474e', // terracotta
@@ -21,6 +22,8 @@
 	let mode = $state<TimerMode>('countdown')
 	let players: string[] = $state(['Player 1', 'Player 2'])
 	let playerColors: string[] = $state([PALETTE[0], PALETTE[1]])
+	let playerIds: number[] = $state([0, 1])
+	let nextId = 2
 	let minutes: number = $state(10)
 	let seconds: number = $state(0)
 	let incrementSeconds: number = $state(0)
@@ -68,12 +71,14 @@
 	function addPlayer() {
 		players = [...players, `Player ${players.length + 1}`]
 		playerColors = [...playerColors, nextColor(playerColors)]
+		playerIds = [...playerIds, nextId++]
 	}
 
 	function removePlayer(i: number) {
 		if (players.length <= 2) return
 		players = players.filter((_, idx) => idx !== i)
 		playerColors = playerColors.filter((_, idx) => idx !== i)
+		playerIds = playerIds.filter((_, idx) => idx !== i)
 	}
 
 	function startGame() {
@@ -102,47 +107,42 @@
 	}
 
 	function shufflePlayers() {
-		const paired = players.map((name, i) => ({ name, color: playerColors[i] }))
+		const paired = players.map((name, i) => ({ name, color: playerColors[i], id: playerIds[i] }))
 		for (let i = paired.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1))
 			;[paired[i], paired[j]] = [paired[j], paired[i]]
 		}
 		players = paired.map((p) => p.name)
 		playerColors = paired.map((p) => p.color)
+		playerIds = paired.map((p) => p.id)
 	}
 
-	let dragIndex: number | null = $state(null)
-	let insertIndex: number | null = $state(null)
+	let colorPickerIndex: number | null = $state(null)
+	let playerListEl: HTMLElement | undefined = $state()
 
-	function onDragStart(i: number) {
-		dragIndex = i
-	}
-
-	function onDragOver(e: DragEvent, i: number) {
-		e.preventDefault()
-		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-		insertIndex = e.clientY < rect.top + rect.height / 2 ? i : i + 1
-	}
-
-	function onDrop() {
-		if (dragIndex === null || insertIndex === null) return
-		const arr = [...players]
-		const colorArr = [...playerColors]
-		const [item] = arr.splice(dragIndex, 1)
-		const [color] = colorArr.splice(dragIndex, 1)
-		const at = insertIndex > dragIndex ? insertIndex - 1 : insertIndex
-		arr.splice(at, 0, item)
-		colorArr.splice(at, 0, color)
-		players = arr
-		playerColors = colorArr
-		dragIndex = null
-		insertIndex = null
-	}
-
-	function onDragEnd() {
-		dragIndex = null
-		insertIndex = null
-	}
+	$effect(() => {
+		if (!playerListEl) return
+		const sortable = Sortable.create(playerListEl, {
+			animation: 150,
+			handle: '.drag-handle',
+			onEnd: (evt) => {
+				const from = evt.oldIndex
+				const to = evt.newIndex
+				if (from === undefined || to === undefined || from === to) return
+				colorPickerIndex = null
+				const arr = [...players]
+				const colorArr = [...playerColors]
+				const idArr = [...playerIds]
+				arr.splice(to, 0, arr.splice(from, 1)[0])
+				colorArr.splice(to, 0, colorArr.splice(from, 1)[0])
+				idArr.splice(to, 0, idArr.splice(from, 1)[0])
+				players = arr
+				playerColors = colorArr
+				playerIds = idArr
+			}
+		})
+		return () => sortable.destroy()
+	})
 </script>
 
 <main>
@@ -151,28 +151,48 @@
 
 	<section>
 		<h2>Players</h2>
-		{#each players as _, i}
-			<div
-				class="player-row"
-				class:dragging={dragIndex === i}
-				class:insert-before={insertIndex === i && dragIndex !== i && dragIndex !== i - 1}
-				class:insert-after={insertIndex === i + 1 && dragIndex !== i && dragIndex !== i + 1}
-				draggable="true"
-				ondragstart={() => onDragStart(i)}
-				ondragover={(e) => onDragOver(e, i)}
-				ondrop={onDrop}
-				ondragend={onDragEnd}
-			>
+		<div bind:this={playerListEl}>
+		{#each players as _, i (playerIds[i])}
+			<div class="player-row">
 				<span class="drag-handle">⠿</span>
+				<button
+					class="color-swatch-btn"
+					style="background: {playerColors[i]}"
+					onclick={() => colorPickerIndex = colorPickerIndex === i ? null : i}
+					title="Change color"
+				></button>
 				<input
 					type="text"
 					bind:value={players[i]}
 					placeholder="Player {i + 1}"
 					style="color: {playerColors[i]}; border-color: {playerColors[i]};"
+					enterkeyhint={i < players.length - 1 ? 'next' : 'done'}
+					onkeydown={(e) => {
+						if (e.key !== 'Enter') return
+						e.preventDefault()
+						const inputs = playerListEl?.querySelectorAll<HTMLInputElement>('input[type="text"]')
+						if (!inputs) return
+						const next = inputs[i + 1]
+						if (next) next.focus()
+						else (e.target as HTMLInputElement).blur()
+					}}
 				/>
 				<button class="btn-remove" onclick={() => removePlayer(i)} disabled={players.length <= 2}>✕</button>
+				{#if colorPickerIndex === i}
+					<div class="color-picker">
+						{#each PALETTE as color}
+							<button
+								class="color-option"
+								class:selected={playerColors[i] === color}
+								style="background: {color}"
+								onclick={() => { playerColors[i] = color; colorPickerIndex = null }}
+							></button>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		{/each}
+		</div>
 		<div class="player-actions">
 			<button class="btn-add" onclick={addPlayer}>+ Add Player</button>
 			<button class="btn-shuffle" onclick={shufflePlayers}>⇄ Shuffle</button>
@@ -300,24 +320,52 @@
 	.player-row {
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
 		gap: 0.5rem;
 		margin-bottom: 0.5rem;
-		border-top: 2px solid transparent;
-		border-bottom: 2px solid transparent;
-		transition: border-color 0.1s, opacity 0.1s;
 	}
 
-	.player-row.dragging {
-		opacity: 0.35;
+	.color-swatch-btn {
+		width: 1.1rem;
+		height: 1.1rem;
+		padding: 0;
+		border-radius: 50%;
+		border: 2px solid rgba(0, 0, 0, 0.12);
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: transform 0.15s, border-color 0.15s;
 	}
 
-	.player-row.insert-before {
-		border-top-color: #000;
+	.color-swatch-btn:hover {
+		transform: scale(1.2);
+		border-color: rgba(0, 0, 0, 0.3);
 	}
 
-	.player-row.insert-after {
-		border-bottom-color: #000;
+	.color-picker {
+		width: 100%;
+		display: flex;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+		padding: 0.4rem 0 0.2rem 1.6rem;
 	}
+
+	.color-option {
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 50%;
+		border: 2.5px solid transparent;
+		cursor: pointer;
+		transition: transform 0.12s, border-color 0.12s;
+	}
+
+	.color-option:hover {
+		transform: scale(1.15);
+	}
+
+	.color-option.selected {
+		border-color: #000;
+	}
+
 
 	.drag-handle {
 		cursor: grab;
@@ -378,6 +426,7 @@
 
 	input[type='text'] {
 		flex: 1;
+		min-width: 0;
 	}
 
 	.time-presets {
