@@ -179,7 +179,7 @@
 		return cfg.players.map((name, i) => ({
 			name,
 			color: cfg.colors?.[i] ?? '#e0e0e0',
-			totalMs: cfg.mode === 'countup' ? 0 : cfg.timeLimitMs,
+			totalMs: cfg.mode === 'countdown' ? cfg.timeLimitMs : 0,
 			moveMs: cfg.timeLimitMs,
 			boostsLeft: cfg.boostCount ?? 0,
 			isEliminated: false
